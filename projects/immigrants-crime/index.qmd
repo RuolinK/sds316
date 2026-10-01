@@ -1,5 +1,5 @@
 ---
-title: "title: "Immigration Detention and Criminal Justice Outcomes Before and After COVID-19""
+title: "title: "Immigration Detention and/or Criminal Justice Outcomes Across Different Immigration Status Before and After COVID-19""
 author: 
   - Ruolin Kang
 date: 2026-09-30
@@ -10,4 +10,4 @@ image: "images/thumbnail.jpeg"  # Required thumbnail for grid view - CHANGE THIS
 
 ## Project Overview
 
-Write about 100 - 150 words describing your project. This description will change over the semester, so each time you make a deliverable, you might need to update it.  Each time, do your best to be accurate to the focus of the project _as it is that that moment_
+This project will focus on how the non-citizen incarceration in the United States over the past 26 years (2000–2026). The research aims to find out how incarceration trends have changed and whether these patterns vary based on immigration status. The research will categorize populations into undocumented migrants, legal permanent residents, and asylum seekers. Additionally, this project will evaluate whether the onset of the Covid-19 Pandemic in 2020 served as a factor for significant changes in incarceration rates.
