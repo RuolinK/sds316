@@ -17,18 +17,19 @@ Being an international student, I'm not that familiar with the Criminal Justice 
 ## Broader Relevance
 When the same charge can mean probation for a citizen but months in detention for an immigrant, it is against the basic promise that the law treats everyone alike. I want to know whether that gap is real and, if it is, whether the Covid-19 Pandemic made it even wider. The answer matters to anyone who cares about family stability and the way we define belonging in the U.S.. If immigration status quietly shapes bail, sentencing, or release decisions, researching on it is the first step to promote fairness.
 
-## Example Projects
 
+## Example Projects
 
 **[Detention Mapping Project](https://www.freedomforimmigrants.org/map):** First, this interactive map project and my ideal research would both focus on the situation of non-citizens/immigrants within the U.S. criminal justice/detention systems. The Detention Mapping Project categorize information by theme and visualize them by temporal and geographical dimensions. This inspire me on how I organizes multiple measures over time.
 
-**[Link to Project](http://www.example.com):** 
+**[The Marshall Project - Immigration](https://www.themarshallproject.org/records/31-immigration):** 
+The Marshall Project’s immigration section combine hard data with individual stories. Many of their pieces trace the arc from a local criminal charge to ICE custody, mirroring my focus on how immigration status can stretch a single case into extra time behind bars.
 
-**[Link to Project](http://www.example.com):** 2-3 sentences about the similarities you see or the inspriation you're taking.
+**[Transactional Records Access Clearinghouse (TRAC)](https://tracreports.org/immigration/):** 
+The TRAC shows how raw FOIA files can be transformed into transparent, time-series data. Their public dashboards also let readers move from headline numbers down to the underlying records.
 
 ## Relevant Literature
 
-Build a **ten** item literature review for work related to your questions. 
 
 1. [Noncitizen Justice: The Criminal Case Processing of Non-US Citizens in Texas and California](https://www.journals.uchicago.edu/doi/full/10.1086/725390?casa_token=pButRWSVRV8AAAAA%3AvLmROMenk7fSwUum_M0p1YuaByzfGoXh0umwHuT5_h5aVJ7403f_GcDEWYmnu8NDNFRCm9JvQA)
 This article uses court records from Texas and California (2005-2019) to show how charging, pleabargains, and sentence lengths differ for immigrants (undocumented people, lawful permanent residents, and visa holders). The model used in the article give me an overview of people's status in two of the very highly populated states.
