@@ -1,6 +1,6 @@
 ---
-title: Initial Questions
-author: Leah Levensailor
+title: "Initial Questions"
+author: "Leah Levensailor"
 execute:
   code-fold: true
 ---
