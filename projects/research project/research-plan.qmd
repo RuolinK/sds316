@@ -1,6 +1,6 @@
 ---
-title: Research Plan
-author: Leah Levensailor
+title: "Research Plan"
+author: "Leah Levensailor"
 execute:
   code-fold: true
 ---
@@ -73,3 +73,6 @@ vehicle theft is decreased since the implementation. They made in clear in multi
 
 **[“Democracy is happening” in the fight over Flock cameras](https://www.hks.harvard.edu/faculty-research/policy-topics/science-technology-data/democracy-happening-fight-over-flock-cameras):** Harvard Kennedy School wrote about how the people did not vote for 
 flock to exist yet they are everywhere. This article will show how people are responding to flock and how scholars are explaining the impact on public safety. The town of Groton is coming together as a town to research and decide if they are beneficial or not. 
+
+**[Immigration in California](https://www.ppic.org/publication/immigrants-in-california/):** 
+
