@@ -26,8 +26,8 @@ import matplotlib.pyplot as plt
 
 ```{python}
 
-df_dist = pd.read_excel('sds316/projects/rae/Texas_district_reallocation_results.xlsx')
-df_block = pd.read_csv('sds316/projects/rae/Texas_block_returning_data.csv')
+df_dist = pd.read_excel('sds316/projects/rae/data/Texas_district_reallocation_results.xlsx')
+df_block = pd.read_csv('sds316/projects/rae/data/Texas_block_returning_data.csv')
 
 df_dist.head()
 ```
@@ -60,7 +60,7 @@ np.sign(df_dist['changepop']).sum()
 
 I know that on average districts changed by 1211, and 89 more House Districts gained total population than lost it.  
 
-## Change in population by demographic
+## Second question: Change in population by demographic
 
 ```{python}
 
@@ -95,7 +95,7 @@ Gain or Lose? 1.0
 
 Okay it seems like across all four racial demographics just barely more districts gained population than lost it. The mean changes in the white, black, latino, and "other" population are 384.80, 433.89, 426.60, 7.773, respectively. 
 
-## Now I'm curious how much each districts total population is under or over the actual population baseline for a single congressional district in TX
+## Third question: Now I'm curious how much each districts total population is under or over the actual population baseline for a single congressional district in TX
 
 ```{python}
 ideal = 194303
@@ -109,7 +109,7 @@ df_dist.sort_values('dif_from_ideal', ascending = False)
 
 House District 95, once adjusted has 10,970.5 more individuals than the ideal district, meaning that many people have been removed from the district's population via the prison pipeline. On the other hand, district 24 has 14,824.3 fewer people than the ideal, meaning that in actuality, its population is inflated by inmates. All other districts have differences from ideal that are between 10,970 and 14,824.
 
-### Geographic patterns? 
+### Fourth question: Geographic patterns? 
 
 Since gerrymandering is inherently geographic, I'm curious whether there are geographic patterns to the districts that gain vs. lose population after adjustment. This should be the same thing as finding whether the adjusted districts are too big (i.e., population was gained) or too small (i.e., population was lost). 
 
@@ -118,7 +118,7 @@ First I need to get the Texas house district shape files to plot.^[Source: https
 ```{python}
 #importing the 2022 HD shapes (this should be pre- recent mid-decade redistricting)
 import geopandas as gpd
-district_shape = gpd.read_file('sds316/projects/rae/TX-2022-State-House-district-shapes-no-landmarks.geojson')
+district_shape = gpd.read_file('sds316/projects/rae/data/TX-2022-State-House-district-shapes-no-landmarks.geojson')
 ```
 
 ```{python}
@@ -129,9 +129,10 @@ district_shape = district_shape.to_crs('EPSG:3081')
 district_shape.crs
 ```
 
-Why do i get two different results for the plot below? 
+Why do i get two different results for the plots below? Probably because toobig and toosmall variables are based on the legal definition of being too big or small. 
 ```{python}
 df_dist_wshape = pd.concat([district_shape[['geometry']],df_dist], axis = 1) 
+
 
 df_dist_wshape['color'] = df_dist_wshape['dif_from_ideal'].apply(lambda x: 'red' if x > 0.0 else 'green' )
 
@@ -145,110 +146,163 @@ color = df_dist_wshape['toobig'].map(color_map)
 df_dist_wshape.plot(color = color)
 ```
 
-## Crimes?
-Okay, this is still making sense. A few more general questions about women. Across all, what were their crimes?
-
 ```{python}
-most_common_crimes = women['V10'].value_counts().head(10)
-
-print(most_common_crimes)
-
+df_dist_wshape['toobig'].value_counts()
 ```
 
-```         
-code - crime
-1 - Murder
-9 - Witchcraft
-16 - Arson
-10 - Robbery-Murder
-33 - Poisoning
-40 - Attempted Murder
-6 - Conspiracy to Murder
-8 - Slave revolt
-36 - Unspecified Felony
-```
-### Witchcraft?
-Woof.  Okay.  This also makes sense.  All of this is part of finding one's way around the dataset.  I am _expecting_ that the women executed for witchcraft were white (based on Hollywood movies about witch trials)
-
+Okay, so I assume that some districts can be too big, too small, or niether, but because toobig and toosmall are binary indicators, I need to make a column that accounts for all three options. 
 ```{python}
 
-# reminder, crime V10, race V5
-# we are asking slightly more complicated questions now
-# of the women where V10 = 9 (witchcraft), what were their races?
-
-race_of_witches = women[women['V10']=="9"]["V5"].value_counts().head(3)
-print(race_of_witches) # or rather, women convicted of witchcraft
+df_dist_wshape['size'] = np.where(df_dist_wshape['toobig'] == 1.0, 'big',
+np.where(df_dist_wshape['toosmall'] == 1.0, 'small', 'neither'))
 ```
 
-### Slave Revolt?
-We're seeing data that matches historical expectations (though we must always be careful when making these!).  Women executed for witchcraft were exclusively white in the dataset.  I would similarly expect women convicted of "Slave Revolt" to be Black.  Does this track? 
+```{python}
+df_dist_wshape.head()
+
+color_map = {'neither': 'lightgrey', 'big': 'red', 'small': 'orange'}
+color = df_dist_wshape['size'].map(color_map)
+
+df_dist_wshape.plot(color = color)
+
+```
+
+Great, it seems like all of the districts that are too big once people are reallocated are districts near/encompassing cities, while the ones that shrink are in more rural. This makes sense given what we know. 
+
+## Fifth question: Racial Demographics
+Now lets look at the demographic breakdowns of these counties; specifically the percent of the population that is black.   
+
+```{python}
+tx_dist_info = pd.read_csv('sds316/projects/rae/data/district-data.csv')
+```
+
+```{python}
+rel_districts = list(df_dist_wshape[df_dist_wshape['size'] != 'neither']['district_h'])
+
+#texas demo info is by district so should map perfectly!
+# tx_dist_info['Label'].value_counts()
+# df_dist_wshape['district_h'].value_counts()
+
+tx_dist_info = tx_dist_info.drop(0, axis = 0 ).reset_index()
+```
+
+```{python}
+df_150 = pd.concat([tx_dist_info, df_dist_wshape], axis = 1)
+df_150.head()
+```
+
+```{python}
+#lets check that the T_20 CENS total is the same as/close to as the pre-reallocation totals
+print(df_150.columns)
+df_150[['T_20_CENS_Total', 'total']]
+df_150['CENS_total_diff'] = df_150['T_20_CENS_Total']- df_150['total']
+```
 
 ```{python}
 
-# reminder, crime V10, race V5
-# we are asking slightly more complicated questions now
-# of the women where V10 = 8 (slave revolt), what were their races?
+df_150['CENS_total_diff_pct'] = df_150['CENS_total_diff']/df_150['total']
 
-race_of_revolters = women[women['V10']=="8"]["V5"].value_counts().head(3)
-print(race_of_revolters) # or rather, women convicted of 'slave revolt'
+df_150['CENS_total_diff_pct'].sort_values()
 ```
 
-Surprise!  That is also majority white women (4 to 1).  Who were these women? 
-
-#### let's put names to the numbers
-```{python}
-# (NOTE, you could do this in the explorer, but then it wouldn't be permanent. This helps us revisit this data any time as we keep thinking through our questions)
-
-# the 5 women convicted and executed for 'slave revolt'
-revolters = women[women['V10']=='8']
-
-# let's make printing easier/prettier and grab just the columns we need
-# V7 = name, V6 = age, V5 = race, V11 = method of ex, V14 year, V16 state
-
-pretty_table = revolters[['V7', 'V6', 'V5', 'V11', 'V14', 'V16']].copy()
-pretty_table.columns = ['Name', 'Age', 'Race', 'Method', 'Ex Year', 'State']
-
-pretty_table
-
-```
-
-## 1741
-Okay, something happened in 1741 with Margaret Kerry and SArah Hughson (I'm guessing).  A quick web search of these two names reveals (1) A website called "executedtoday.com" (grim), with [details](https://www.executedtoday.com/2016/06/12/1741-john-hughson-sarah-hughson-and-peggy-kerry-so-abandoned-to-confederate-with-slaves/) of this situation.  It was apparently part of the "New York Slave Rebellion of 1741" ([Brittanica Entry](https://www.britannica.com/event/New-York-slave-rebellion-of-1741))
-
-If this dataset is complete, I would expect to see a lot of people executed in New York (`state == 36`) in 1741. The Brittanica entry reads "As a result of the rumors, false confessions, and finger-pointing, approximately 30 Black people and 4 white people (the Hughsons, Kerry, and Ury) were executed, and some 80 more people, mostly Black but some white, were exiled."   Does the dataset have this data?
-
-### Checking the Uprising
+There is no difference between the 2020 Census totals and the totals in the adjusted data! 
 
 ```{python}
-# we're going back to the entire dataset now and checking on the year 1741
-revolters = df[df['V14'] == 1741]
+print(tx_dist_info.index)
+print(df_dist_wshape.index)
+df_150.head()
+df_150['pct_black'] = df_150['T_20_CENS_Black'] / df_150['T_20_CENS_Total']
 
-print("Total Executions in 1741", len(revolters))
+df_150.plot(ax = ax, color = 'lightgrey')
+
+df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax, column = 'pct_black', legend = True)
+
+df_150[df_150['toosmall'] == 1.0].plot(ax = ax, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
+
+plt.title('Pct of Non-adjusted District - Black', ax = ax)
 
 ```
 
-This is close. What about in New York State?
+Seems like there's not an immediate racial correlation here. Some of the districts that gain people after reallocation have a high percent of black individuals, others do not. 
+
+## Sixth question: Prison locations 
+
+Lets plot the 5 largest state correctional facilities . I think I know which districts in which they might fall...
 
 ```{python}
-# we're going back to the entire dataset now and checking on the year 1741
-revolters = df[df['V14'] == 1741]['V16']
+#five largest state run prisons in texas, 3 seem to be in the same place
+adresses = pd.Series(['2661 FM 2054, Tennessee Colony, TX 75884', '2101 FM 369, Iowa Park, TX 76367', '9601 Spur 591, Amarillo, TX 79107', '1391 FM 3328, Tennessee Colony, TX 75880', '2664 FM 2054, Tennessee Colony, TX 75886'])
 
-print("Top 3 states with executions in 1741", revolters.value_counts().head(3))
+prisons_gdf  = gpd.tools.geocode(adresses)
+#, verify = False) this doesn't work :(
+prisons_gdf.head()
 ```
-
-Okaaaay!  I'm not sure if this is the focus I want to pursue for the next phase, but this data seems to line up really tidily with this historical account.  I wasn't expecting to find _any_ of this when I grabbed this dataset, but this feels like a fine stopping point for this line of inquiry.  Let's put names to these folks, too, and then take a step back for another set of questions.
-
-### the humans of New York, 1741
 
 ```{python}
-# filter for year of execution (V14) and state of execution (V16)
-ny_revolters = df[(df['V14'] == 1741) & (df['V16'] == 36)]
+import plotly.express as px
 
-pretty_table = ny_revolters[['V7', 'V6', 'V5', 'V11', 'V14', 'V16']].copy()
-pretty_table.columns = ['Name', 'Age', 'Race', 'Method', 'Ex Year', 'State']
+df_150 = df_150.set_geometry('geometry', crs = 3081)
 
-pretty_table
+fig, ax = plt.subplots()
 
+df_150.plot(ax = ax, color = 'lightgrey')
+
+df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax, column = 'pct_black', legend = True)
+
+df_150[df_150['toosmall'] == 1.0].plot(ax = ax, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
+
+prisons_gpd = prisons_gpd.to_crs('EPSG:3081')
+prisons_gpd.plot(ax = ax, color = 'red', markersize = 5 )
 ```
 
-Oh for f's sake.  I see that there were different methods of execution that, not perfectly, but pretty tidily map to race.  People who were white (`race == 1`) were hanged (`1`), while Black people were sometimes hanged, but also executed by methods `10` and `11` (burning, and hanging in chains).  This dataset just keeps giving.  
+The plot above is not working because of this error: Max retries exceeded with url: /api?q=2661+Farm-To-Market+Rd+2054%2C+Tennessee+Colony%2C+TX+75884&limit=1 (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)')))
+
+
+# Seventh question: The plots above used the pct_black with the unadjusted totals/Census counts. Do the results change when we ue the adjusted data? 
+
+```{python}
+fig, ax2 = plt.subplots()
+
+df_150['adj_pct_black'] = df_150['adjblack'] / df_150['adjtotal']
+
+df_150.plot(ax = ax2, color = 'lightgrey')
+
+df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax2, column = 'adj_pct_black', legend = True)
+
+df_150[df_150['toosmall'] == 1.0].plot(ax = ax2, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
+
+plt.title('Pct of Adjusted District - Black', ax = ax2)
+```
+
+It doesn't look like anything changed. 
+
+# Eighth question: What about partisanship? Are there partisan patterns to the way in which people are distributed? 
+
+```{python}
+df_elect = pd.read_csv('sds316/projects/rae/data/district-election-data.csv')[['E_16-20_COMP_Total', 'E_16-20_COMP_Dem', 'E_16-20_COMP_Rep']]
+
+df_elect = df_elect.drop(0, axis = 0).reset_index()
+```
+
+```{python}
+df_elect.head()
+df_elect_shape = pd.concat([df_elect, df_dist_wshape], axis = 1)
+
+df_elect_shape.head()
+
+
+fig, ax3 = plt.subplots()
+
+df_150['Dem_vote_share'] = df_150['E_16-20_COMP_Dem'] / df_150['E_16-20_COMP_Total']
+
+df_150.plot(ax = ax3, color = 'lightgrey')
+
+df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax3, column = 'Dem_vote_share', legend = True)
+
+df_150[df_150['toosmall'] == 1.0].plot(ax = ax3, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
+
+plt.title('Pct of Non-adjusted District - Dem', ax = ax3)
+```
+
+There are much clearer partisan pattersn to this. Most of the counties that are "too big" after reallocation voted Democratic, so this confirms that theres are partisan consquences to prison gerrymandering in Texas, as the literature suggests. 
+
