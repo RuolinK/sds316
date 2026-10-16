@@ -211,6 +211,12 @@ There is no difference between the 2020 Census totals and the totals in the adju
 print(tx_dist_info.index)
 print(df_dist_wshape.index)
 df_150.head()
+
+fig, ax = plt.subplots()
+
+df_150 = df_150.set_geometry('geometry')
+df_150 = df_150.to_crs('EPSG: 3081')
+
 df_150['pct_black'] = df_150['T_20_CENS_Black'] / df_150['T_20_CENS_Total']
 
 df_150.plot(ax = ax, color = 'lightgrey')
@@ -219,7 +225,7 @@ df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax, column = 'pct_bla
 
 df_150[df_150['toosmall'] == 1.0].plot(ax = ax, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
 
-plt.title('Pct of Non-adjusted District - Black', ax = ax)
+plt.title('Pct of Non-adjusted District - Black')
 
 ```
 
@@ -230,33 +236,51 @@ Seems like there's not an immediate racial correlation here. Some of the distric
 Lets plot the 5 largest state correctional facilities . I think I know which districts in which they might fall...
 
 ```{python}
-#five largest state run prisons in texas, 3 seem to be in the same place
-adresses = pd.Series(['2661 FM 2054, Tennessee Colony, TX 75884', '2101 FM 369, Iowa Park, TX 76367', '9601 Spur 591, Amarillo, TX 79107', '1391 FM 3328, Tennessee Colony, TX 75880', '2664 FM 2054, Tennessee Colony, TX 75886'])
+# #five largest state run prisons in texas, 3 seem to be in the same place
+# adresses = pd.Series(['2661 FM 2054, Tennessee Colony, TX 75884', '2101 FM 369, Iowa Park, TX 76367', '9601 Spur 591, Amarillo, TX 79107', '1391 FM 3328, Tennessee Colony, TX 75880', '2664 FM 2054, Tennessee Colony, TX 75886'])
 
-prisons_gdf  = gpd.tools.geocode(adresses)
-#, verify = False) this doesn't work :(
-prisons_gdf.head()
+# prisons_gdf  = gpd.tools.geocode(adresses)
+# #, verify = False) this doesn't work :(
+# prisons_gdf.head()
+
+prison_gdf = gpd.read_file('sds316/projects/rae/data/allprisons.csv')
+prison_gdf = prison_gdf[prison_gdf['stateshortname'] == 'TX']
+prisons_1 = prison_gdf[['name', 'coordinates']]
+prisons_2 = prison_gdf[['PrisonName', 'geometry']]
+prisons_1.rename(columns = {'name': 'PrisonName', 'coordinates': 'geometry'}, inplace = True)
+prisons_merged = pd.concat([prisons_1, prisons_2], axis = 0).reset_index()
+prisons_merged = prisons_merged[prisons_merged['geometry'].str.contains(')', regex = False)]
+prisons_merged['geometry'] = shapely.from_wkt(prisons_merged['geometry'])
+
+prisons_merged = prisons_merged.set_geometry('geometry', crs = 4326)
+prisons_merged = prisons_merged.to_crs('EPSG:3081')
+
 ```
 
 ```{python}
-import plotly.express as px
+import shapely
 
 df_150 = df_150.set_geometry('geometry', crs = 3081)
 
-fig, ax = plt.subplots()
+fig, axis = plt.subplots()
 
-df_150.plot(ax = ax, color = 'lightgrey')
+df_150.plot(ax = axis, color = 'lightgrey')
 
-df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax, column = 'pct_black', legend = True)
+df_150[df_150['district_h'].isin(rel_districts)].plot(ax = axis, column = 'pct_black', legend = True)
 
-df_150[df_150['toosmall'] == 1.0].plot(ax = ax, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
+df_150[df_150['toosmall'] == 1.0].plot(ax = axis, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
 
-prisons_gpd = prisons_gpd.to_crs('EPSG:3081')
-prisons_gpd.plot(ax = ax, color = 'red', markersize = 5 )
+prisons_merged.plot(ax = axis, color = 'red', markersize = 3)
+
 ```
 
-The plot above is not working because of this error: Max retries exceeded with url: /api?q=2661+Farm-To-Market+Rd+2054%2C+Tennessee+Colony%2C+TX+75884&limit=1 (Caused by SSLError(SSLCertVerificationError(1, '[SSL: CERTIFICATE_VERIFY_FAILED] certificate verify failed: unable to get local issuer certificate (_ssl.c:1081)')))
+Hmm, it seems like prisons also exist in areas that become "too big" after reallocation. However, that may be due to the existance of lower security or municipal prisons in the area. 
 
+Not sure how to get rid of the outlier point!
+
+```{python}
+shapely.from_wkt(prisons_merged['geometry'].iloc[0])
+```
 
 # Seventh question: The plots above used the pct_black with the unadjusted totals/Census counts. Do the results change when we ue the adjusted data? 
 
@@ -306,3 +330,89 @@ plt.title('Pct of Non-adjusted District - Dem', ax = ax3)
 
 There are much clearer partisan pattersn to this. Most of the counties that are "too big" after reallocation voted Democratic, so this confirms that theres are partisan consquences to prison gerrymandering in Texas, as the literature suggests. 
 
+# 9th question: What's the distribution of legal maps after reallocation? 
+
+Below I'm attempting to run the Flip Chain MCMC method using Gerrychain. This seems to work so next, let me try to do this with Texas 2020 VTD data. 
+
+```{python}
+from gerrychain import  (
+    GeographicPartition,
+    Partition,
+    Graph,
+    MarkovChain,
+    updaters,
+    constraints,
+    accept,
+    Election,
+)
+from gerrychain.proposals import ReCom
+from gerrychain.constraints import contiguous
+from gerrychain.examples import gerrymandria
+from functools import partial
+import pandas
+from gerrychain.accept import always_accept
+from gerrychain.constraints import single_flip_contiguous
+from gerrychain.proposals import propose_random_flip
+from gerrychain.constraints import contiguous
+
+pa_chain = MarkovChain(
+    total_steps=40,
+    rng=2024,
+)
+```
+
+
+```{python}
+graph = Graph.from_json("sds316/projects/rae/data/PA_VTDs.json")
+
+my_updaters = {"population": updaters.Tally("TOT_POP", alias="population")}
+
+pa_chain.initial_partition = GeographicPartition(
+    graph, assignment="2011_PLA_1", updaters=my_updaters
+)
+elections_updaters = {
+    "SEN10": Election("SEN10", {"Democratic": "SEN10D", "Republican": "SEN10R"}),
+    "SEN12": Election("SEN12", {"Democratic": "USS12D", "Republican": "USS12R"}),
+    "SEN16": Election("SEN16", {"Democratic": "T16SEND", "Republican": "T16SENR"}),
+    "PRES12": Election("PRES12", {"Democratic": "PRES12D", "Republican": "PRES12R"}),
+    "PRES16": Election("PRES16", {"Democratic": "T16PRESD", "Republican": "T16PRESR"}),
+}
+
+pa_chain.add_updaters(elections_updaters)
+
+ideal_population = sum(pa_chain.initial_partition["population"].values()) / len(
+    pa_chain.initial_partition
+)
+
+# pa_chain.proposal_fn = build_recom_proposal_fn(
+#     pop_col="TOT_POP",
+#     pop_target=ideal_population,
+#     epsilon=0.02,
+# )
+pa_chain.proposal_fn = propose_random_flip
+pa_chain.add_constraint(contiguous)
+pa_chain.acceptance_fn = always_accept
+```
+
+```{python}
+def cut_edges_length(partition):
+    return len(partition["cut_edges"])
+
+pa_chain.add_constraint(
+    constraints.UpperBound(cut_edges_length, 2 * len(pa_chain.initial_partition["cut_edges"]))
+)
+```
+
+
+```{python}
+import tqdm
+data = pandas.DataFrame(
+    sorted(partition["SEN12"].percents("Democratic"))
+    for partition in pa_chain.with_progress_bar()
+)
+
+ax = data.boxplot(positions=range(len(data.columns)))
+plt.plot(data.iloc[0], "ro")
+
+plt.show()
+```
