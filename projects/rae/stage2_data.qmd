@@ -51,8 +51,8 @@ import tqdm
 
 ```{python}
 
-df_dist = pd.read_excel('projects/rae/data/Texas_district_reallocation_results.xlsx')
-df_block = pd.read_csv('projects/rae/data/Texas_block_returning_data.csv')
+df_dist = pd.read_excel('data/Texas_district_reallocation_results.xlsx')
+df_block = pd.read_csv('data/Texas_block_returning_data.csv')
 
 df_dist.head()
 ```
@@ -67,12 +67,6 @@ df_block.head()
 I notice there's a column in the districts dataset that examines the change in total population, and the change disaggregated by racial group. What's the average change in the House Districts' total populations?
 
 ```{python}
-# import pandas as pd
-# from pyprojroot import here # this helps us navigate tricky path stuff between local runs and quarto builds
-
-# # Load the data using here() with the path from the project root
-# file_path = here("projects/demo/_data/ICPSR_08451/DS0001/08451-0001-Data.tsv")
-
 #on average districts change by 1,211 people BUT this tells me nothing about whether we've lost or gained 
 print(df_dist['changepop'].abs().aggregate('mean'))
 
@@ -185,7 +179,7 @@ First I need to get the Texas house district shape files to plot.[^1]
 
 ```{python}
 #importing the 2022 HD shapes (this should be pre- recent mid-decade redistricting)
-district_shape = gpd.read_file('projects/rae/data/TX-2022-State-House-district-shapes-no-landmarks.geojson')
+district_shape = gpd.read_file('data/TX-2022-State-House-district-shapes-no-landmarks.geojson')
 ```
 
 ```{python}
@@ -243,7 +237,7 @@ Great, it seems like all of the districts that are too big once people are reall
 Now lets look at the demographic breakdowns of these counties; specifically the percent of the population that is black.
 
 ```{python}
-tx_dist_info = pd.read_csv('projects/rae/data/district-data.csv')
+tx_dist_info = pd.read_csv('data/district-data.csv')
 ```
 
 ```{python}
@@ -345,7 +339,7 @@ Lets plot the correctional facilities in TX. I think I know which districts in w
 #^the approach above didn't work
 
 
-prison_gdf = gpd.read_file('projects/rae/data/TX_prisons.geojson')
+prison_gdf = gpd.read_file('data/TX_prisons.geojson')
 
 ```
 
@@ -382,7 +376,7 @@ df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax2, column = 'adj_pc
 
 df_150[df_150['toosmall'] == 1.0].plot(ax = ax2, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
 
-plt.title('Pct of Adjusted District - Black', ax = ax2)
+plt.title('Pct of Adjusted District - Black')
 ```
 
 It doesn't look like anything changed.
@@ -390,7 +384,7 @@ It doesn't look like anything changed.
 ## Ninth question: What about partisanship? Are there partisan patterns to the way in which people are distributed?
 
 ```{python}
-df_elect = pd.read_csv('projects/rae/data/district-election-data.csv')[['E_16-20_COMP_Total', 'E_16-20_COMP_Dem', 'E_16-20_COMP_Rep']]
+df_elect = pd.read_csv('data/district-election-data.csv')[['E_16-20_COMP_Total', 'E_16-20_COMP_Dem', 'E_16-20_COMP_Rep']]
 
 df_elect = df_elect.drop(0, axis = 0).reset_index()
 ```
@@ -412,7 +406,7 @@ df_150[df_150['district_h'].isin(rel_districts)].plot(ax = ax3, column = 'Dem_vo
 
 df_150[df_150['toosmall'] == 1.0].plot(ax = ax3, column = 'size', alpha = 0.5, hatch = '||', hatchcolor = 'white')
 
-plt.title('Pct of Non-adjusted District - Dem', ax = ax3)
+plt.title('Pct of Non-adjusted District - Dem')
 ```
 
 There are much clearer partisan patterns to this. Most of the counties that are "too big" after reallocation voted Democratic, so this confirms that there are partisan consequences to prison gerrymandering in Texas, as the literature suggests.
@@ -429,7 +423,7 @@ pa_chain = MarkovChain(
     rng=2024,
 )
 
-graph = Graph.from_json("projects/rae/data/PA_VTDs.json")
+graph = Graph.from_json("data/PA_VTDs.json")
 
 my_updaters = {"population": updaters.Tally("TOT_POP", alias="population")}
 
