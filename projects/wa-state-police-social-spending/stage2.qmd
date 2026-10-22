@@ -14,6 +14,7 @@ Initially, I want to explore the dataset containing Washington state fiscal info
 ```{python}
 #python cell = CMD Shift I
 
+
 import pandas as pd
 from pyprojroot import here
 
@@ -132,16 +133,15 @@ df_2025_pierce = df_2025[df_2025["EntityTitle1"] == "Pierce County"].copy()
 pierce_cat_totals = (df_2025_pierce.groupby("SpendingCategory")["Amount6"].sum())
 
 print(pierce_cat_totals)
-print(pierce_cat_totals["Criminal Legal System"]) # when I run this i get "6,520,247114,131113,9903,799,482180,919638,449" and then a TypeError in the next cell bc you can't divide a string by an int 
 ```
 
 ```{python}
 #per capita funding
-#pierce_pc = pierce_cat_totals["Criminal Legal System"] / 946288
-#king_pc = king_cat_totals["Criminal Legal System"] / 2344939
+# pierce_pc = pierce_cat_totals["Criminal Legal System"] / 946288
+# king_pc = king_cat_totals["Criminal Legal System"] / 2344939
 
-#print("Pierce County:", pierce_pc)
-#print("King County:", king_pc)
+# print("Pierce County:", pierce_pc)
+# print("King County:", king_pc)
 ```
 
 In 2025, Pierce County received about $12.01 per capita in distributions related to the criminal legal system. King County received about $11.12 per capita in distributions related to the criminal legal system. It's important to note that this is just state funding and not the counties' own criminal legal system spending. I'm curious - is this difference an effect of each counties' crime rates?
