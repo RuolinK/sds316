@@ -3,8 +3,7 @@ import pandas as pd
 from pyprojroot import here 
 
 #loading the data sets
-file_path = here("/Users/kaylatillmon/Desktop/sds316/projects/kaylas-deliverable2/_data/populations_states.csv")
-
+file_path = here("projects/kaylas-deliverable2/_data/populations_states.csv")
 incarerated_pop = pd.read_csv(file_path)
 
 # what do the first 10 rows look like?
@@ -91,9 +90,9 @@ Which states had the highest proportion of Black incarceration in 2022, on avera
 most_recent_year = most_recent_year.copy()
 
 # creating the black proportion column
-most_recent_year['black_proportion'] = 
+
 # accessing the incarcerated black column and incarcerated total and dividing to get the proportion
-(most_recent_year['incarcerated_black'] /
+most_recent_year['black_proportion'] = (most_recent_year['incarcerated_black'] /
     most_recent_year['incarcerated_total']
     ) 
 # creating a new df using the copy, grouping by state and filtered to black proportion and getting the mean of black proportion, then sorting it by highest to lowest
